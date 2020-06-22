@@ -9,12 +9,14 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.function.Consumer;
 
 public class NoticiaDao {
     final static Logger LOG = Logger.getLogger(NoticiaDao.class);
 
-    public void adicionarNoticia(String titulo, LocalDate data, String conteudo) throws ConexaoException, DaoException {
+    public void adicionarNoticia(String titulo, LocalDate data, String conteudo, Consumer<String> estado) throws ConexaoException, DaoException {
         LOG.info("Adicionando notícia: "+ titulo);
+        estado.accept("Iniciando rotina de envio de notícia");
         String sqlUltimaNoticia = "SELECT `fulltext`, created_by_alias, images, urls, attribs, ordering, metadata FROM jos_content WHERE catid = 10 ORDER BY 1 DESC;";
 
         String sqlInsertNoticia = "INSERT INTO " +
@@ -27,12 +29,13 @@ public class NoticiaDao {
             Integer idAsset = criaAsset(conn, titulo);
 
             LOG.info("Carregando última notícia postada");
+            estado.accept("Carregando valores padrão de envio");
             PreparedStatement stmtUltimaNoticia = conn.prepareStatement(sqlUltimaNoticia);
             ResultSet rsUltima = stmtUltimaNoticia.executeQuery();
             rsUltima.next();
             LocalDateTime dateTime = LocalDateTime.of(data.getYear(), data.getMonth(), data.getDayOfMonth(), 10, 45);
 
-            LOG.info("Preparando Insert");
+            estado.accept("Preparando parâmetros");
             PreparedStatement stmt = conn.prepareStatement(sqlInsertNoticia);
             stmt = conn.prepareStatement(sqlInsertNoticia);
             int i = 1;
@@ -66,6 +69,7 @@ public class NoticiaDao {
             stmt.setString(i++ , "*");
             stmt.setString(i++ , "xreference");
             LOG.info("Executando Statement");
+            estado.accept("Enviando Notícia");
             stmt.executeUpdate();
             stmt.close();
         } catch (SQLException e) {

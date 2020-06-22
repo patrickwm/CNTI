@@ -147,12 +147,26 @@ public class PrincipalController implements Initializable {
                 }
 
                 String[] paragrafos = resto.split("\\r\\n\\r\\n\\r\\n");
-                String fonte = paragrafos[paragrafos.length - 1].substring(paragrafos[paragrafos.length - 1].indexOf("Fonte:"));
-                paragrafos[paragrafos.length - 1] = paragrafos[paragrafos.length - 1].substring(0, paragrafos[paragrafos.length - 1].indexOf("Fonte:"));
 
-                List<String> paragrafosLimpos = Arrays.stream(paragrafos).map(p -> retiraCaracteres(p, "\r", "\n")).collect(Collectors.toList());
+                String ultimoParagrafo = paragrafos[paragrafos.length - 1];
+                int inicioFonte = ultimoParagrafo.indexOf("Fonte:");
 
-                noticias.add(new Noticia(LocalDate.parse(data, DateTimeFormatter.ofPattern("dd/MM/yyyy")), titulo, paragrafosLimpos, fonte.replaceAll("Fonte:", "")));
+                String fonte = ultimoParagrafo.substring(inicioFonte);
+                paragrafos[paragrafos.length - 1] = ultimoParagrafo.substring(0, inicioFonte);
+
+                List<String> paragrafosLimpos = Arrays.stream(paragrafos)
+                    .map(this::verificaQuebraParagrafos)
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList());
+
+                noticias.add(
+                    new Noticia(
+                        LocalDate.parse(data, DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                        titulo,
+                        paragrafosLimpos,
+                        fonte.replaceAll("Fonte:", "")
+                    )
+                );
             } catch (Exception e){
                 LOG.error("ERRO ao carregar notícia: " + retiraCaracteres(linha, "\r", "\n").trim());
                 erro ++;
@@ -166,10 +180,49 @@ public class PrincipalController implements Initializable {
         return noticias;
     }
 
+    private List<String> verificaQuebraParagrafos(String texto){
+        String textoLimpo = retiraCaracteres(texto,  "\r", "\n");
+        textoLimpo = textoLimpo.replaceAll("“", "\"");
+        textoLimpo = textoLimpo.replaceAll("”", "\"");
+
+        String textoAnalisado = procuraNovoParagrafo(textoLimpo);
+        String[] resultadoAnalise = textoAnalisado.split("\n");
+        return Arrays.asList(resultadoAnalise);
+    }
+
+    private String procuraNovoParagrafo(String texto) {
+        if(texto == null || texto.isEmpty()) {
+            return texto;
+        }  else {
+            int proximoPonto = texto.indexOf(".") + 1;
+            if(proximoPonto > 1) {
+                if(texto.length() > proximoPonto && texto.length() > proximoPonto + 1) {
+                    String proximoCaracter = "" + texto.charAt(proximoPonto);
+                    String proximoDoProximoCaracter = "" + texto.charAt(proximoPonto + 1);
+                    if (proximoCaracter.equals(" ") || proximoCaracter.matches("^[0-9]")
+                        || (proximoCaracter.equals("\"") && proximoDoProximoCaracter.equals(" "))) {
+                        return texto.substring(0, proximoPonto) + procuraNovoParagrafo(texto.substring(proximoPonto));
+                    } else if ((proximoCaracter.equals("\"") && proximoDoProximoCaracter.equals("."))) {
+                        return texto.substring(0, proximoPonto + 2) + procuraNovoParagrafo(texto.substring(proximoPonto + 2));
+                    } else if ((proximoCaracter.equals("\"") && !proximoDoProximoCaracter.equals(" "))) {
+                        return texto.substring(0, proximoPonto + 1) + "\n" + procuraNovoParagrafo(texto.substring(proximoPonto + 1));
+                    } else {
+                        return texto.substring(0, proximoPonto) + "\n" + procuraNovoParagrafo(texto.substring(proximoPonto));
+                    }
+                } else {
+                    return texto;
+                }
+            } else {
+                return texto;
+            }
+        }
+    }
+
     private String retiraCaracteres(String conteudo, String... caracteres) {
         for (String r : caracteres) {
             conteudo = conteudo.replaceAll(r, "");
         }
+
         return conteudo;
     }
 

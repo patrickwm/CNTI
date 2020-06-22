@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 public class PreviewController implements Initializable {
     final static Logger LOG = Logger.getLogger(PreviewController.class);
@@ -101,14 +102,18 @@ public class PreviewController implements Initializable {
             }
             Platform.runLater(() -> {
                 piCarregando.setVisible(true);
-                txResultado.setText("Enviando Noticia");
             });
+            Consumer<String> estadoEnvio = this::atualizaMensagem;
             NoticiaDao dao = new NoticiaDao();
-            dao.adicionarNoticia(titulo, data, conteudo);
+            dao.adicionarNoticia(titulo, data, conteudo, estadoEnvio);
             Platform.runLater(() -> {
                 piCarregando.setVisible(false);
-                txResultado.setText("Notícia cadastrada com sucesso!");
                 close();
+                alerta(
+                    Alert.AlertType.CONFIRMATION,
+                    "Sucesso",
+                    String.format("Notícia %s inserida com suceso!", noticia.getTitulo())
+                );
             });
 
         } catch (ValidacaoException | ConexaoException | DaoException e){
@@ -119,7 +124,23 @@ public class PreviewController implements Initializable {
                 txTitulo.setDisable(false);
                 dtData.setDisable(false);
                 btEnviar.setDisable(false);
+                alerta(
+                    Alert.AlertType.ERROR,
+                    "Erro",
+                    String.format("Erro ao inserir notícia %s !", noticia.getTitulo())
+                );
             });
         }
+    }
+
+    private void atualizaMensagem(String mensagem){
+        Platform.runLater(() -> txResultado.setText(mensagem));
+    }
+
+    private void alerta(Alert.AlertType tipo, String headerText, String contextText){
+        Alert alerta = new Alert(tipo);
+        alerta.setHeaderText(headerText);
+        alerta.setContentText(contextText);
+        alerta.showAndWait();
     }
 }
