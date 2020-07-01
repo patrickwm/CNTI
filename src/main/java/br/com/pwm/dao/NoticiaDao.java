@@ -14,10 +14,18 @@ import java.util.function.Consumer;
 public class NoticiaDao {
     final static Logger LOG = Logger.getLogger(NoticiaDao.class);
 
+    private final String FULLTEXT = "";
+    private final String CREATED_BY_ALIAS = "";
+    private final String IMAGES = "{\"image_intro\":\"\",\"float_intro\":\"\",\"image_intro_alt\":\"\",\"image_intro_caption\":\"\",\"image_fulltext\":\"\",\"float_fulltext\":\"\",\"image_fulltext_alt\":\"\",\"image_fulltext_caption\":\"\"}";
+    private final String URLS = "{\"urla\":false,\"urlatext\":\"\",\"targeta\":\"\",\"urlb\":false,\"urlbtext\":\"\",\"targetb\":\"\",\"urlc\":false,\"urlctext\":\"\",\"targetc\":\"\"}";
+    private final String ATTRIBS = "{\"show_title\":\"\",\"link_titles\":\"\",\"show_tags\":\"\",\"show_intro\":\"\",\"info_block_position\":\"\",\"show_category\":\"\",\"link_category\":\"\",\"show_parent_category\":\"\",\"link_parent_category\":\"\",\"show_author\":\"\",\"link_author\":\"\",\"show_create_date\":\"\",\"show_modify_date\":\"\",\"show_publish_date\":\"\",\"show_item_navigation\":\"\",\"show_icons\":\"\",\"show_print_icon\":\"\",\"show_email_icon\":\"\",\"show_vote\":\"\",\"show_hits\":\"\",\"show_noauth\":\"\",\"urls_position\":\"\",\"alternative_readmore\":\"\",\"article_layout\":\"\",\"show_publishing_options\":\"\",\"show_article_options\":\"\",\"show_urls_images_backend\":\"\",\"show_urls_images_frontend\":\"\"}";
+    private final Integer ORDERING = 10;
+    private final String METADATA = "{\"robots\":\"\",\"author\":\"\",\"rights\":\"\",\"xreference\":\"\"}";
+
     public void adicionarNoticia(String titulo, LocalDate data, String conteudo, Consumer<String> estado) throws ConexaoException, DaoException {
         LOG.info("Adicionando notícia: "+ titulo);
         estado.accept("Iniciando rotina de envio de notícia");
-        String sqlUltimaNoticia = "SELECT `fulltext`, created_by_alias, images, urls, attribs, ordering, metadata FROM jos_content WHERE catid = 10 ORDER BY 1 DESC;";
+        String sqlUltimaNoticia = "SELECT ordering FROM jos_content WHERE catid = 10 ORDER BY 1 DESC;";
 
         String sqlInsertNoticia = "INSERT INTO " +
                 "jos_content(asset_id, title, alias, introtext, `fulltext`, state, catid, created, created_by, created_by_alias, modified, modified_by, checked_out, checked_out_time, publish_up, publish_down, images, urls, attribs, version, ordering, metakey, metadesc, access, hits, metadata, featured, language, xreference)" +
@@ -28,8 +36,8 @@ public class NoticiaDao {
             Connection conn = ConnectionFactorySBR.getConnection();
             Integer idAsset = criaAsset(conn, titulo);
 
-            LOG.info("Carregando última notícia postada");
-            estado.accept("Carregando valores padrão de envio");
+            LOG.info("Carregando última ordem");
+            estado.accept("Carregando última ordem");
             PreparedStatement stmtUltimaNoticia = conn.prepareStatement(sqlUltimaNoticia);
             ResultSet rsUltima = stmtUltimaNoticia.executeQuery();
             rsUltima.next();
@@ -41,30 +49,30 @@ public class NoticiaDao {
             int i = 1;
             stmt.setInt(i++ , idAsset);
             stmt.setString(i++ ,titulo);
-            stmt.setString(i++,titulo.replaceAll("  ", "").trim().replaceAll(" ", "-"));
+            stmt.setString(i++, titulo.replaceAll("  ", "").trim().replaceAll(" ", "-"));
             stmt.setString(i++ , conteudo);
-            stmt.setString(i++, rsUltima.getString("fulltext"));
+            stmt.setString(i++, FULLTEXT);
             stmt.setInt(i++ , 1);
             stmt.setInt(i++ , 10);
             stmt.setString(i++ , dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             stmt.setInt(i++ , 42);
-            stmt.setString(i++, rsUltima.getString("created_by_alias"));
+            stmt.setString(i++, CREATED_BY_ALIAS);
             stmt.setString(i++ ,dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             stmt.setInt(i++ , 0);
             stmt.setInt(i++ ,0);
             stmt.setString(i++ ,"0000-00-00 00:00:00");
             stmt.setString(i++ ,dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             stmt.setString(i++ ,"0000-00-00 00:00:00");
-            stmt.setString(i++ ,rsUltima.getString("images"));
-            stmt.setString(i++ ,rsUltima.getString("urls"));
-            stmt.setString(i++ ,rsUltima.getString("attribs"));
+            stmt.setString(i++ , IMAGES);
+            stmt.setString(i++ , URLS);
+            stmt.setString(i++ , ATTRIBS);
             stmt.setInt(i++ ,1);
             stmt.setInt(i++ ,rsUltima.getInt("ordering") + 1);
             stmt.setString(i++ ,"metakey");
             stmt.setString(i++ , titulo);
             stmt.setInt(i++ , 1);
             stmt.setInt(i++ , 0);
-            stmt.setString(i++ , rsUltima.getString("metadata"));
+            stmt.setString(i++ , METADATA);
             stmt.setInt(i++ , 0);
             stmt.setString(i++ , "*");
             stmt.setString(i++ , "xreference");
