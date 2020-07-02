@@ -1,7 +1,5 @@
 package br.com.pwm.control;
 
-import br.com.pwm.custom.CustomTableColumn;
-import br.com.pwm.custom.CustomTableView;
 import br.com.pwm.exception.ConexaoException;
 import br.com.pwm.main.Preview;
 import br.com.pwm.model.Noticia;
@@ -31,7 +29,19 @@ public class PrincipalController implements Initializable {
     @FXML
     private AnchorPane anpFundo;
 
-    private CustomTableView<Noticia> tbNoticias;
+    //private CustomTableView<Noticia> tbNoticias;
+
+    @FXML
+    private TableView<Noticia> tbNoticias;
+
+    @FXML
+    private TableColumn<Noticia, Boolean> clmCheck;
+
+    @FXML
+    private TableColumn<Noticia, LocalDate> clmData;
+
+    @FXML
+    private TableColumn<Noticia, String> clmTitulo;
 
     @FXML
     private TextField txLink;
@@ -45,9 +55,8 @@ public class PrincipalController implements Initializable {
     @FXML
     private Label txResultado;
 
-    @FXML
-    private AnchorPane anpTabela;
-
+    /*@FXML
+    private AnchorPane anpTabela;*/
     public void initialize(URL location, ResourceBundle resources) {
         initActions();
         initTable();
@@ -69,7 +78,13 @@ public class PrincipalController implements Initializable {
     }
 
     public void initTable() {
-        tbNoticias = new CustomTableView<>();
+        clmCheck.setCellValueFactory(new PropertyValueFactory<>("selecionado"));
+        clmData.setCellValueFactory(new PropertyValueFactory<>("data"));
+        clmTitulo.setCellValueFactory(new PropertyValueFactory<>("titulo"));
+
+        clmCheck.setCellFactory(CheckBoxTableCell.forTableColumn(clmCheck));
+
+        /*tbNoticias = new CustomTableView<>();
 
         CustomTableColumn clmCheck = new CustomTableColumn("");
         clmCheck.setMinWidth(34);
@@ -88,8 +103,7 @@ public class PrincipalController implements Initializable {
         AnchorPane.setBottomAnchor(tbNoticias, 0.0);
         AnchorPane.setTopAnchor(tbNoticias, 0.0);
         AnchorPane.setLeftAnchor(tbNoticias, 0.0);
-        AnchorPane.setRightAnchor(tbNoticias, 0.0);
-
+        AnchorPane.setRightAnchor(tbNoticias, 0.0);*/
     }
 
     public void setPadroes() {
@@ -113,12 +127,12 @@ public class PrincipalController implements Initializable {
 
     public String getConteudoHTML(TagNode html) {
         TagNode conteudo = html.getChildTags()[1] //BODY
-            .getChildTags()[0] //<div align="center">
-            .getChildTags()[0] //<center>
-            .getChildTags()[0] //<table>
-            .getChildTags()[0] //<tbody>
-            .getChildTags()[1] //<tr conteudo>
-            .getChildTags()[0]; //<td>
+                .getChildTags()[0] //<div align="center">
+                .getChildTags()[0] //<center>
+                .getChildTags()[0] //<table>
+                .getChildTags()[0] //<tbody>
+                .getChildTags()[1] //<tr conteudo>
+                .getChildTags()[0]; //<td>
 
         return conteudo.getText().toString();
     }
@@ -178,21 +192,21 @@ public class PrincipalController implements Initializable {
                         fonte.replaceAll("Fonte:", "")
                     )
                 );
-            } catch (Exception e) {
+            } catch (Exception e){
                 LOG.error("ERRO ao carregar notícia: " + retiraCaracteres(linha, "\r", "\n").trim());
-                erro++;
+                erro ++;
             }
 
         }
 
-        if (erro > 0) {
+        if(erro > 0) {
             LOG.info(String.format("Houveram %d notícias que não puderam ser carregadas", erro));
         }
         return noticias;
     }
 
-    private List<String> verificaQuebraParagrafos(String texto) {
-        String textoLimpo = retiraCaracteres(texto, "\r", "\n");
+    private List<String> verificaQuebraParagrafos(String texto){
+        String textoLimpo = retiraCaracteres(texto,  "\r", "\n");
         textoLimpo = textoLimpo.replaceAll("“", "\"");
         textoLimpo = textoLimpo.replaceAll("”", "\"");
 
@@ -202,12 +216,12 @@ public class PrincipalController implements Initializable {
     }
 
     private String procuraNovoParagrafo(String texto) {
-        if (texto == null || texto.isEmpty()) {
+        if(texto == null || texto.isEmpty()) {
             return texto;
         } else {
             int proximoPonto = texto.indexOf(".") + 1;
-            if (proximoPonto > 1) {
-                if (texto.length() > proximoPonto && texto.length() > proximoPonto + 1) {
+            if(proximoPonto > 1) {
+                if(texto.length() > proximoPonto && texto.length() > proximoPonto + 1) {
                     String proximoCaracter = "" + texto.charAt(proximoPonto);
                     String proximoDoProximoCaracter = "" + texto.charAt(proximoPonto + 1);
                     if (proximoCaracter.equals(" ") || proximoCaracter.matches("^[0-9]")
