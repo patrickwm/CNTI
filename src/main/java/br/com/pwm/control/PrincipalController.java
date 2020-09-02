@@ -126,9 +126,17 @@ public class PrincipalController implements Initializable {
     }
 
     public String getConteudoHTML(TagNode html) {
-        TagNode conteudo = html.getChildTags()[1] //BODY
-                .getChildTags()[0] //<div align="center">
-                .getChildTags()[0] //<center>
+        TagNode divCenter = html.getChildTags()[1] //BODY
+            .getChildTags()[0]; //<div align="center">
+
+        TagNode proxima = null; //Pode ou não ter uma tag <center>
+        if(divCenter.getChildTags()[0].toString().equals("center")) {
+            proxima = divCenter.getChildTags()[0];
+        } else {
+            proxima = divCenter;
+        }
+
+        TagNode conteudo = proxima //<center>
                 .getChildTags()[0] //<table>
                 .getChildTags()[0] //<tbody>
                 .getChildTags()[1] //<tr conteudo>
