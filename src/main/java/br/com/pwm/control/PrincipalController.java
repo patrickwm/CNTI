@@ -107,7 +107,7 @@ public class PrincipalController implements Initializable {
     }
 
     public void setPadroes() {
-        txLink.setText("http://cnti.org.br/html/noticias.htm");
+        txLink.setText("https://cnti.org.br/html/noticias.htm");
     }
 
     public void analisar() {
@@ -120,6 +120,9 @@ public class PrincipalController implements Initializable {
             } catch (ConexaoException e) {
                 LOG.error(e.getCause());
                 txResultado.setText(e.getMessage());
+            } catch (Exception e) {
+                LOG.error(e);
+                txResultado.setText("Erro ao efeturar leitura do conteudo HTML");
             }
         }
 
