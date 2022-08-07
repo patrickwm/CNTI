@@ -28,7 +28,7 @@ public class Principal extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        System.setProperty("https.protocols", "TLSv1.1");
+        System.setProperty("https.protocols", "TLSv1.2");
         stage = Tela.carregaTela(getClass(), stage, "Principal");
         stage.show();
     }

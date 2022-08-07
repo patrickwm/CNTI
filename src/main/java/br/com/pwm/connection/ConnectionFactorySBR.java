@@ -11,7 +11,7 @@ public class ConnectionFactorySBR {
     private static String usuario = Propriedades.get("usuario_sbr");
     private static String senha = Propriedades.get("senha_sbr");
     private static String banco = Propriedades.get("banco_sbr");
-    private static String url = "jdbc:mysql://"+Propriedades.get("url_acesso_sbr");
+    private static String url = "jdbc:mysql://" + Propriedades.get("url_acesso_sbr");
 
     private static Connection conexao;
 
@@ -20,7 +20,7 @@ public class ConnectionFactorySBR {
 
         try {
             Class.forName(driverName);
-            conexao = DriverManager.getConnection(url+banco, usuario, senha);
+            conexao = DriverManager.getConnection(url + banco, usuario, senha);
         } catch (SQLException e) {
             throw new ConexaoException("Não foi possível se conectar ao servidor de banco de dados", e);
         } catch (ClassNotFoundException e) {
